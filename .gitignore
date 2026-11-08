@@ -52,3 +52,7 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# личные заметки, не для репозитория
+/.private/
+CLAUDE.local.md
