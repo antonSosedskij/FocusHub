@@ -41,12 +41,12 @@ const ProjectPage = async ({ params }: PageProps<"/projects/[projectId]">) => {
           {tasks.map((task) => (
             <li key={task.id} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
               {task.title}
-              <TaskStatusBadge status={task.status}></TaskStatusBadge>
+              <TaskStatusBadge status={task.status} />
             </li>
           ))}
         </ul>
       ) : (
-        <EmptyState title="Задач пока нет..."></EmptyState>
+        <EmptyState className="mt-8" title="Задач пока нет" />
       )}
     </section>
   );
