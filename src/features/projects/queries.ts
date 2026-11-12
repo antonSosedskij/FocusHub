@@ -1,7 +1,7 @@
-import { getProject, getProjectTasks } from "@/features/projects/mock-data";
+import { getProject, getProjectTasks, TaskFilters } from "@/features/projects/mock-data";
 
-export const getProjectWithTasks = async (id: number) => {
-  const [project, tasks] = await Promise.all([getProject(id), getProjectTasks(id)]);
+export const getProjectWithTasks = async (id: number, filters: TaskFilters) => {
+  const [project, tasks] = await Promise.all([getProject(id), getProjectTasks(id, filters)]);
 
   return { project, tasks };
 };

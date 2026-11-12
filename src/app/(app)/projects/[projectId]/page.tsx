@@ -1,19 +1,27 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProjectWithTasks } from "@/features/projects/queries";
-import { TaskStatusBadge } from "@/features/tasks/components/task-status-badge";
-import { EmptyState } from "@/components/ui/empty-state";
+import { isTaskStatus } from "@/features/tasks/status";
+import { TaskList } from "@/features/tasks/components/task-list";
 
-const ProjectPage = async ({ params }: PageProps<"/projects/[projectId]">) => {
+const ProjectPage = async ({ params, searchParams }: PageProps<"/projects/[projectId]">) => {
   const { projectId } = await params;
+  const { status, q } = await searchParams;
 
   const id = Number(projectId);
+  const validStatus = isTaskStatus(status) ? status : undefined;
+  const validQuery = typeof q === "string" ? q : undefined;
+
+  const hasFilters = !!validQuery || !!validStatus;
 
   if (!Number.isInteger(id) || id <= 0) {
     notFound();
   }
 
-  const { project, tasks } = await getProjectWithTasks(id);
+  const { project, tasks } = await getProjectWithTasks(id, {
+    status: validStatus,
+    query: validQuery,
+  });
 
   if (!project) {
     notFound();
@@ -36,18 +44,7 @@ const ProjectPage = async ({ params }: PageProps<"/projects/[projectId]">) => {
         <p className="mt-1 text-zinc-400 italic dark:text-zinc-500">Без описания</p>
       )}
 
-      {tasks.length > 0 ? (
-        <ul className="mt-8 divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
-          {tasks.map((task) => (
-            <li key={task.id} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-              {task.title}
-              <TaskStatusBadge status={task.status} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <EmptyState className="mt-8" title="Задач пока нет" />
-      )}
+      <TaskList tasks={tasks} hasFilters={hasFilters} resetHref={`/projects/${id}`} />
     </section>
   );
 };
