@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getProjectWithTasks } from "@/features/projects/queries";
 import { isTaskStatus } from "@/features/tasks/status";
 import { TaskList } from "@/features/tasks/components/task-list";
+import { TaskStatusFilter } from "@/features/tasks/components/task-status-filter";
 
 const ProjectPage = async ({ params, searchParams }: PageProps<"/projects/[projectId]">) => {
   const { projectId } = await params;
@@ -44,7 +45,18 @@ const ProjectPage = async ({ params, searchParams }: PageProps<"/projects/[proje
         <p className="mt-1 text-zinc-400 italic dark:text-zinc-500">Без описания</p>
       )}
 
-      <TaskList tasks={tasks} hasFilters={hasFilters} resetHref={`/projects/${id}`} />
+      <TaskStatusFilter
+        className="mt-6"
+        status={validStatus}
+        query={validQuery}
+        baseHref={`/projects/${id}`}
+      />
+      <TaskList
+        className="mt-4"
+        tasks={tasks}
+        hasFilters={hasFilters}
+        resetHref={`/projects/${id}`}
+      />
     </section>
   );
 };
