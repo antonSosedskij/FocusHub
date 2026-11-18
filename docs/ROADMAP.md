@@ -16,6 +16,7 @@
 | 8   | TanStack Query                           | —            |
 | 9   | React Hook Form + Zod                    | —            |
 | 10  | Тесты, перф, деплой                      | —            |
+| 11  | AI-фича: LLM за интерфейсом              | —            |
 
 ## Стек (на 2026-11-08)
 
@@ -32,7 +33,9 @@
 | Vitest            | 5.1         | + RTL 16, user-event 14, jest-dom                                              |
 | Playwright        | 1.65        | e2e против прод-сборки на порту 3100                                           |
 
-Zustand, TanStack Query, React Hook Form и Zod ставим на их этапах, чтобы не держать в проекте неиспользуемые пакеты.
+Zustand, TanStack Query, React Hook Form и Zod ставим на их этапах, чтобы не держать в проекте неиспользуемые пакеты. SDK LLM-провайдеров (`@anthropic-ai/sdk`, `openai` для OpenRouter, `ollama` и т. п.) ставим на этапе 11.
+
+**Про AI-этап:** модель прячем за своим интерфейсом (`TaskGenerator`), чтобы провайдер выбирался env-переменной: fake (тесты и разработка), Ollama (бесплатно, локально), OpenRouter (один ключ и OpenAI-совместимый API ко многим моделям, есть бесплатные с лимитами; удобно для разработки и сравнения моделей), облачный провайдер напрямую (Claude или другой) для прода. Через OpenRouter structured outputs есть не у всех моделей, а бесплатные модели могут логировать запросы, поэтому ответ всегда валидируем Zod-ом и реальных данных туда не шлём. Минимум — «разбей проект на задачи» (structured output + Zod + server action). Расширение по желанию: ассистент с tool calling и подтверждением мутаций. Нужны пройденные этапы 3, 5 и 9. Облачный API платный, работает по предоплате и только в поддерживаемых странах: проверить заранее.
 
 **Про деплой:** файловая SQLite на Vercel не живёт. На этапе 10 выбираем: сменить драйвер Drizzle на libsql/Turso (схема почти не меняется) или деплоить туда, где есть диск.
 
@@ -53,6 +56,9 @@ Zustand, TanStack Query, React Hook Form и Zod ставим на их этап�
 - https://react.dev/reference/rsc/use-client — что делает директива и где граница
 - https://nextjs.org/docs/app/getting-started/server-and-client-components — как это устроено в Next
 - https://nextjs.org/docs/app/getting-started/fetching-data — данные в серверных компонентах, стриминг
+- https://nextjs.org/docs/app/api-reference/functions/use-link-status — `pending` у нажатой ссылки
+
+Задача из этапа 1: чипс фильтра по статусу подсвечивается только после ответа сервера. Первый клиентский компонент — индикатор `pending` на нажатом чипсе через `useLinkStatus`.
 
 **3. Мутации**
 
@@ -86,6 +92,9 @@ Zustand, TanStack Query, React Hook Form и Zod ставим на их этап�
 - https://react.dev/reference/react/useDeferredValue — отложенное значение
 - https://react.dev/reference/react/use — чтение промиса и контекста
 - https://react.dev/reference/react/Suspense — границы загрузки
+- https://react.dev/reference/react/useOptimistic — оптимистичное состояние поверх transition
+
+Задача из этапа 1: переделать подсветку чипса фильтра на `useOptimistic` + `useTransition` (горит сразу, откат при ошибке) и сравнить с вариантом на `useLinkStatus` из этапа 2.
 
 **8. TanStack Query**
 
@@ -102,3 +111,16 @@ Zustand, TanStack Query, React Hook Form и Zod ставим на их этап�
 - https://playwright.dev/docs/intro — первый e2e-тест
 - https://nextjs.org/docs/app/guides/testing — что и как тестировать в App Router
 - https://react.dev/learn/react-compiler — компилятор в Next
+
+**11. AI-фича**
+
+- https://nextjs.org/docs/app/getting-started/route-handlers — route handlers, если ответ модели стримим отдельным эндпоинтом
+- https://nextjs.org/docs/app/api-reference/file-conventions/route#streaming — стриминг из route handler через Web Streams
+- https://nextjs.org/docs/app/guides/streaming — стриминг UI через RSC и Suspense как альтернатива
+- https://platform.claude.com/docs/en/build-with-claude/structured-outputs — ответ строго по JSON-схеме
+- https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview — tool calling: определение инструментов и цикл вызовов
+- https://platform.claude.com/docs/en/build-with-claude/streaming — события стрима и SDK-хелперы
+- https://github.com/ollama/ollama — локальные модели: установка и запуск
+- https://github.com/ollama/ollama-js — JS-клиент Ollama, JSON-ответ по схеме через `format`
+- https://openrouter.ai/docs — OpenRouter: подключение через OpenAI SDK, выбор модели, structured outputs
+- https://openrouter.ai/models — каталог моделей с ценами, фильтр по бесплатным
