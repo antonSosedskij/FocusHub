@@ -33,9 +33,9 @@
 | Vitest            | 5.1         | + RTL 16, user-event 14, jest-dom                                              |
 | Playwright        | 1.65        | e2e против прод-сборки на порту 3100                                           |
 
-Zustand, TanStack Query, React Hook Form и Zod ставим на их этапах, чтобы не держать в проекте неиспользуемые пакеты. SDK LLM-провайдеров (`@anthropic-ai/sdk`, `openai` для OpenRouter, `ollama` и т. п.) ставим на этапе 11.
+Zustand, TanStack Query, React Hook Form и Zod ставим на их этапах, чтобы не держать в проекте неиспользуемые пакеты. SDK LLM-провайдеров (`openai` для Kimi и OpenRouter через `baseURL`, `ollama`) ставим на этапе 11.
 
-**Про AI-этап:** модель прячем за своим интерфейсом (`TaskGenerator`), чтобы провайдер выбирался env-переменной: fake (тесты и разработка), Ollama (бесплатно, локально), OpenRouter (один ключ и OpenAI-совместимый API ко многим моделям, есть бесплатные с лимитами; удобно для разработки и сравнения моделей), облачный провайдер напрямую (Claude или другой) для прода. Через OpenRouter structured outputs есть не у всех моделей, а бесплатные модели могут логировать запросы, поэтому ответ всегда валидируем Zod-ом и реальных данных туда не шлём. Минимум — «разбей проект на задачи» (structured output + Zod + server action). Расширение по желанию: ассистент с tool calling и подтверждением мутаций. Нужны пройденные этапы 3, 5 и 9. Облачный API платный, работает по предоплате и только в поддерживаемых странах: проверить заранее.
+**Про AI-этап:** модель прячем за своим интерфейсом (`TaskGenerator`), чтобы провайдер выбирался env-переменной: fake (тесты и разработка), Ollama (бесплатно, локально), OpenRouter (один ключ и OpenAI-совместимый API ко многим моделям, есть бесплатные с лимитами; удобно для разработки и сравнения моделей), Kimi API (Moonshot) напрямую как основной облачный провайдер для прода (OpenAI-совместимый API, `response_format` с `json_schema`, tool calling). Через OpenRouter structured outputs есть не у всех моделей, бесплатные модели могут логировать запросы, а Kimi — китайский провайдер со своей юрисдикцией данных. Поэтому ответ всегда валидируем Zod-ом и реальных данных никуда не шлём. Минимум — «разбей проект на задачи» (structured output + Zod + server action). Расширение по желанию: ассистент с tool calling и подтверждением мутаций. Нужны пройденные этапы 3, 5 и 9. Облачный API платный, работает по предоплате и только в поддерживаемых странах: проверить заранее.
 
 **Про деплой:** файловая SQLite на Vercel не живёт. На этапе 10 выбираем: сменить драйвер Drizzle на libsql/Turso (схема почти не меняется) или деплоить туда, где есть диск.
 
@@ -117,9 +117,9 @@ Zustand, TanStack Query, React Hook Form и Zod ставим на их этап�
 - https://nextjs.org/docs/app/getting-started/route-handlers — route handlers, если ответ модели стримим отдельным эндпоинтом
 - https://nextjs.org/docs/app/api-reference/file-conventions/route#streaming — стриминг из route handler через Web Streams
 - https://nextjs.org/docs/app/guides/streaming — стриминг UI через RSC и Suspense как альтернатива
-- https://platform.claude.com/docs/en/build-with-claude/structured-outputs — ответ строго по JSON-схеме
-- https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview — tool calling: определение инструментов и цикл вызовов
-- https://platform.claude.com/docs/en/build-with-claude/streaming — события стрима и SDK-хелперы
+- https://platform.kimi.ai/docs/overview — Kimi API: модели, ключ, `baseURL` для OpenAI SDK
+- https://platform.kimi.ai/docs/api-reference — chat completions: `response_format` (`json_schema`), tool calls, стриминг
+- https://platform.kimi.ai/docs/price — цены и лимиты
 - https://github.com/ollama/ollama — локальные модели: установка и запуск
 - https://github.com/ollama/ollama-js — JS-клиент Ollama, JSON-ответ по схеме через `format`
 - https://openrouter.ai/docs — OpenRouter: подключение через OpenAI SDK, выбор модели, structured outputs
