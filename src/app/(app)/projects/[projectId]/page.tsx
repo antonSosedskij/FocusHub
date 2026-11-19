@@ -4,6 +4,7 @@ import { getProjectWithTasks } from "@/features/projects/queries";
 import { isTaskStatus } from "@/features/tasks/status";
 import { TaskList } from "@/features/tasks/components/task-list";
 import { TaskStatusFilter } from "@/features/tasks/components/task-status-filter";
+import { TaskTitleFilter } from "@/features/tasks/components/task-title-filter";
 
 const ProjectPage = async ({ params, searchParams }: PageProps<"/projects/[projectId]">) => {
   const { projectId } = await params;
@@ -51,6 +52,14 @@ const ProjectPage = async ({ params, searchParams }: PageProps<"/projects/[proje
         query={validQuery}
         baseHref={`/projects/${id}`}
       />
+
+      <TaskTitleFilter
+        className="mt-3"
+        baseHref={`/projects/${id}`}
+        status={validStatus}
+        query={validQuery}
+      />
+
       <TaskList
         className="mt-4"
         tasks={tasks}
